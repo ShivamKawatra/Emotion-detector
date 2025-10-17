@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Emotion Detector</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { display: flex; gap: 20px; }
+        .video-section { flex: 1; }
+        .stats-section { flex: 1; }
+        #video { max-width: 100%; border: 2px solid #333; }
+        .emotion-display { font-size: 24px; margin: 10px 0; }
+        .confidence { color: #666; }
+        #emotionChart { max-width: 400px; }
+    </style>
+</head>
+<body>
+    <h1>Real-Time Emotion/Stress Detector</h1>
+    
+    <div class="container">
+        <div class="video-section">
+            <img id="video" src="" alt="Video Feed">
+            <div class="emotion-display">
+                <div>Face Emotion: <span id="faceEmotion">-</span></div>
+                <div class="confidence">Confidence: <span id="faceConfidence">-</span></div>
+            </div>
+            <button onclick="startDetection()">Start Detection</button>
+        </div>
+        
+        <div class="stats-section">
+            <h3>Emotion Statistics</h3>
+            <canvas id="emotionChart"></canvas>
+            <div id="stressLevel">Stress Level: <span id="stress">Low</span></div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let emotionCounts = {Neutral: 0, Happy: 0, Sad: 0, Stressed: 0};
+        let chart;
+
+        // Initialize chart
+        const ctx = document.getElementById('emotionChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(emotionCounts),
+                datasets: [{
+                    data: Object.values(emotionCounts),
+                    backgroundColor: ['#36A2EB', '#4BC0C0', '#FFCE56', '#FF6384']
+                }]
+            }
+        });
+
+        function startDetection() {
+            socket.emit('start_detection');
+        }
+
+        socket.on('emotion_data', function(data) {
+            // Update video feed
+            document.getElementById('video').src = 'data:image/jpeg;base64,' + data.frame;
+            
+            // Update emotion display
+            document.getElementById('faceEmotion').textContent = data.face_emotion;
+            document.getElementById('faceConfidence').textContent = data.face_confidence.toFixed(2);
+            
+            // Update statistics
+            if (data.face_emotion in emotionCounts) {
+                emotionCounts[data.face_emotion]++;
+                chart.data.datasets[0].data = Object.values(emotionCounts);
+                chart.update();
+            }
+            
+            // Update stress level
+            const stressLevel = data.face_emotion === 'Stressed' ? 'High' : 
+                               data.face_emotion === 'Sad' ? 'Medium' : 'Low';
+            document.getElementById('stress').textContent = stressLevel;
+        });
+    </script>
+</body>
+</html>
