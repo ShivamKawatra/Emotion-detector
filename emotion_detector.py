@@ -86,11 +86,13 @@ class EmotionDetector:
             
             emotion, confidence = self.predict_emotion(frame)
             
-            # Display results
+            # Display results with better visibility
+            # Add background rectangles for text
+            cv2.rectangle(frame, (5, 5), (400, 80), (0, 0, 0), -1)
             cv2.putText(frame, f'Emotion: {emotion}', (10, 30), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            cv2.putText(frame, f'Confidence: {confidence:.2f}', (10, 70), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+            cv2.putText(frame, f'Confidence: {confidence:.2f}', (10, 60), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             
             cv2.imshow('Emotion Detector', frame)
             
