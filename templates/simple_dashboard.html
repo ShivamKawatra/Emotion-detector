@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Emotion Detector</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
+        .container { display: inline-block; }
+        #videoFeed { border: 2px solid #333; max-width: 640px; }
+        .info { margin: 20px 0; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Real-Time Emotion Detector</h1>
+    
+    <div class="container">
+        <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Live Video Feed">
+        
+        <div class="info">
+            <p>✅ Live camera feed with real-time emotion detection</p>
+            <p>📊 Emotion and confidence displayed on video</p>
+            <p>🔄 Refresh page if video doesn't load</p>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-refresh if video fails to load
+        document.getElementById('videoFeed').onerror = function() {
+            setTimeout(() => {
+                this.src = "{{ url_for('video_feed') }}?" + new Date().getTime();
+            }, 2000);
+        };
+    </script>
+</body>
+</html>

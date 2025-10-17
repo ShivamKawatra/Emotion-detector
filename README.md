@@ -22,7 +22,13 @@ python run_demo.py
 
 **Or start web dashboard directly:**
 ```bash
-python dashboard.py
+python simple_dashboard.py
+# Visit: http://localhost:5003
+```
+
+**Alternative dashboard:**
+```bash
+python dashboard.py  # Advanced (may have camera issues)
 # Visit: http://localhost:5002
 ```
 
