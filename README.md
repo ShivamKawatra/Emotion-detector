@@ -35,6 +35,11 @@ python dashboard.py
 
 ## 💡 Usage
 
+### Test Camera First:
+```bash
+python test_camera.py
+```
+
 ### Standalone Detection:
 - Press 'q' to quit face detection
 - Press Ctrl+C to stop voice detection
@@ -43,6 +48,14 @@ python dashboard.py
 - Click "Start Detection" to begin real-time analysis
 - View live video feed with emotion overlay
 - Monitor emotion statistics and stress levels
+
+## 🔧 Troubleshooting
+
+**Camera Error (-1072875772)**:
+1. Close other apps using camera (Zoom, Teams, etc.)
+2. Check camera permissions in Windows Settings
+3. Try different camera index (0, 1, 2)
+4. Restart your computer
 
 ## 🛠️ Tech Stack
 

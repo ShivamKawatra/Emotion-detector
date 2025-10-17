@@ -62,11 +62,26 @@ class EmotionDetector:
         return 'No Face', 0.0
     
     def run_detection(self):
-        cap = cv2.VideoCapture(0)
+        # Try different camera indices
+        cap = None
+        for i in range(3):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                print(f"Camera {i} opened successfully")
+                break
+            cap.release()
         
+        if not cap or not cap.isOpened():
+            print("Error: Could not open camera. Please check:")
+            print("1. Camera is connected and not used by other apps")
+            print("2. Camera permissions are granted")
+            return
+        
+        print("Press 'q' to quit")
         while True:
             ret, frame = cap.read()
             if not ret:
+                print("Failed to grab frame")
                 break
             
             emotion, confidence = self.predict_emotion(frame)
