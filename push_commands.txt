@@ -1,0 +1,4 @@
+cd c:\Users\admin\Desktop\FOSS_FORGE\ML_NLP\emotion_detector
+git remote add origin https://github.com/YOURUSERNAME/emotion-detector.git
+git branch -M main
+git push -u origin main
