@@ -25,7 +25,8 @@
                 <div>Face Emotion: <span id="faceEmotion">-</span></div>
                 <div class="confidence">Confidence: <span id="faceConfidence">-</span></div>
             </div>
-            <button onclick="startDetection()">Start Detection</button>
+            <button id="startBtn" onclick="startDetection()">Start Detection</button>
+            <button id="stopBtn" onclick="stopDetection()" style="display:none; margin-left:10px;">Stop Detection</button>
         </div>
         
         <div class="stats-section">
@@ -55,6 +56,14 @@
 
         function startDetection() {
             socket.emit('start_detection');
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'inline';
+        }
+        
+        function stopDetection() {
+            socket.emit('stop_detection');
+            document.getElementById('startBtn').style.display = 'inline';
+            document.getElementById('stopBtn').style.display = 'none';
         }
 
         socket.on('emotion_data', function(data) {
@@ -76,6 +85,12 @@
             const stressLevel = data.face_emotion === 'Stressed' ? 'High' : 
                                data.face_emotion === 'Sad' ? 'Medium' : 'Low';
             document.getElementById('stress').textContent = stressLevel;
+        });
+        
+        socket.on('error', function(data) {
+            alert('Camera Error: ' + data.message);
+            document.getElementById('startBtn').style.display = 'inline';
+            document.getElementById('stopBtn').style.display = 'none';
         });
     </script>
 </body>

@@ -21,46 +21,71 @@ voice_detector = VoiceEmotionDetector()
 def index():
     return render_template('dashboard.html')
 
+detection_active = False
+
 @socketio.on('start_detection')
 def handle_detection():
-    # Try different camera indices
-    cap = None
-    for i in range(3):
-        cap = cv2.VideoCapture(i)
-        if cap.isOpened():
-            print(f"Camera {i} opened for web dashboard")
-            break
-        cap.release()
-    
-    if not cap or not cap.isOpened():
-        socketio.emit('error', {'message': 'Camera not accessible'})
+    global detection_active
+    if detection_active:
         return
     
-    try:
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                socketio.emit('error', {'message': 'Failed to grab frame'})
-                break
+    detection_active = True
+    
+    def detection_loop():
+        global detection_active
+        # Try different camera indices
+        cap = None
+        for i in range(3):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                ret, test_frame = cap.read()
+                if ret:
+                    print(f"Camera {i} opened for web dashboard")
+                    break
+            cap.release()
+            cap = None
+        
+        if not cap or not cap.isOpened():
+            socketio.emit('error', {'message': 'Camera not accessible. Close other camera apps first.'})
+            detection_active = False
+            return
+        
+        try:
+            while detection_active:
+                ret, frame = cap.read()
+                if not ret:
+                    socketio.emit('error', {'message': 'Failed to grab frame'})
+                    break
+                    
+                # Face emotion detection
+                face_emotion, face_confidence = emotion_detector.predict_emotion(frame)
                 
-            # Face emotion detection
-            face_emotion, face_confidence = emotion_detector.predict_emotion(frame)
-            
-            # Encode frame for web display
-            _, buffer = cv2.imencode('.jpg', frame)
-            frame_data = base64.b64encode(buffer).decode('utf-8')
-            
-            # Send data to frontend
-            socketio.emit('emotion_data', {
-                'frame': frame_data,
-                'face_emotion': face_emotion,
-                'face_confidence': face_confidence,
-                'timestamp': time.time()
-            })
-            
-            time.sleep(0.1)  # 10 FPS
-    finally:
-        cap.release()
+                # Encode frame for web display
+                _, buffer = cv2.imencode('.jpg', frame)
+                frame_data = base64.b64encode(buffer).decode('utf-8')
+                
+                # Send data to frontend
+                socketio.emit('emotion_data', {
+                    'frame': frame_data,
+                    'face_emotion': face_emotion,
+                    'face_confidence': face_confidence,
+                    'timestamp': time.time()
+                })
+                
+                time.sleep(0.1)  # 10 FPS
+        finally:
+            cap.release()
+            detection_active = False
+    
+    # Run detection in separate thread
+    thread = threading.Thread(target=detection_loop)
+    thread.daemon = True
+    thread.start()
+
+@socketio.on('stop_detection')
+def handle_stop():
+    global detection_active
+    detection_active = False
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, port=5002)
